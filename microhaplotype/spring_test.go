@@ -6,18 +6,18 @@ import (
 )
 
 func TestNewSpring(t *testing.T) {
-	rdr := Read()
+	rdr := Read("data/data.cvf")
 	var spr = NewSpring(40, 3, 110)
 	MHnamed := Nomenclature("GP")
 	for {
 		variant := rdr.Read()
 		if variant == nil {
-			fmt.Print(String(spr.PopAll(), MHnamed))
+			fmt.Print(String(spr.PopAll(), MHnamed, 100))
 			break
 		}
 		//fmt.Println(*variant)
 		if r := spr.Add(variant); r != nil {
-			fmt.Print(String(r, MHnamed))
+			fmt.Print(String(r, MHnamed, 100))
 		}
 	}
 }
@@ -25,7 +25,7 @@ func TestNewSpring(t *testing.T) {
 func TestNomenclature(t *testing.T) {
 	// the line below must be added in vcf file.
 	// ##INFO=<ID=MH,Number=1,Type=String,Description="this variant and its relatives make a microhap">
-	rdr := Read()
+	rdr := Read("data/data.cvf")
 
 	MHnamed := Nomenclature("GP")
 	for {

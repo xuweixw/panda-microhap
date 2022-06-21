@@ -7,7 +7,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	rdr := Read()
+	rdr := Read("data/data.cvf")
 
 	for {
 		variant := rdr.Read()
