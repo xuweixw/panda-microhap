@@ -194,14 +194,8 @@ func GetGT(variant *vcfgo.Variant, sample string) (Genotype, error) {
 func GetAD(variant *vcfgo.Variant, sample string) ([]int, error) {
 	for i, s := range variant.Header.SampleNames {
 		if s == sample {
-			if AD, err := variant.GetGenotypeField(variant.Samples[i], "AD", -1); err != nil {
-				return []int{}, err
-			} else {
-				ADstring := strings.Split(AD.(string), ",")
-				var ADslice = make([]int, len(ADstring))
-				for i := 0; i < len(ADstring); i++ {
-					ADslice[i], _ = strconv.Atoi(ADstring[i])
-				}
+			if AD, err := variant.GetGenotypeField(variant.Samples[i], "AD", -1); err == nil {
+				ADslice := AD.([]int)
 				return ADslice, nil
 			}
 		}
