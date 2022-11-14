@@ -40,3 +40,15 @@ func TestNomenclature(t *testing.T) {
 	//mh0XGP-000001
 	//mh09GP-000003
 }
+
+func TestDisEqual(t *testing.T) {
+	var (
+		arr1 = []float64{0.55, 0.56, 0.77}
+		arr2 = []float64{0.45, 0.45, 0.45}
+	)
+	fmt.Println(DisEqual(arr1))
+	fmt.Println(DisEqual(arr2))
+	// Output:
+	//true
+	//false
+}

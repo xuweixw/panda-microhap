@@ -136,22 +136,25 @@ func CheckMH(variants []*vcfgo.Variant) bool {
 	for _, variant := range variants {
 		// Check Diploid
 		for _, name := range variant.Header.SampleNames {
-			ADslice, _ := GetAD(variant, name)
+			ADslice, err := GetAD(variant, name)
+			if err != nil {
+				log.Panicln("Get AD error: ", err)
+			}
 			if !IsDiploid(ADslice[0], ADslice[1:]) {
 				return false
 			}
 		}
 		// Check Segregation
-		for _, fam := range Family {
-			fatherGT, _ := GetGT(variant, SampleID[fam[0]])
-			motherGT, _ := GetGT(variant, SampleID[fam[1]])
-			childGT, _ := GetGT(variant, SampleID[fam[2]])
-			if ok := Segregate([]Genotype{fatherGT, motherGT}, childGT); !ok {
-				//fmt.Println(variant.Chrom(), variant.Pos, fatherGT, fatherAD, motherGT, motherAD, childGT, childAD, fam)
-				//time.Sleep(time.Second)
-				return false
-			}
-		}
+		//for _, fam := range Family {
+		//	fatherGT, _ := GetGT(variant, SampleID[fam[0]])
+		//	motherGT, _ := GetGT(variant, SampleID[fam[1]])
+		//	childGT, _ := GetGT(variant, SampleID[fam[2]])
+		//	if ok := Segregate([]Genotype{fatherGT, motherGT}, childGT); !ok {
+		//		//fmt.Println(variant.Chrom(), variant.Pos, fatherGT, fatherAD, motherGT, motherAD, childGT, childAD, fam)
+		//		//time.Sleep(time.Second)
+		//		return false
+		//	}
+		//}
 		// Check genotype polymophsim
 		sampleNames := variant.Header.SampleNames
 		firstGT, _ := GetGT(variant, sampleNames[0])
@@ -163,6 +166,9 @@ func CheckMH(variants []*vcfgo.Variant) bool {
 				return false
 			}
 		}
+	}
+	if !DisEqual(GetAF(variants)) {
+		return false
 	}
 	return true
 }
@@ -188,12 +194,47 @@ func GetGT(variant *vcfgo.Variant, sample string) (Genotype, error) {
 func GetAD(variant *vcfgo.Variant, sample string) ([]int, error) {
 	for i, s := range variant.Header.SampleNames {
 		if s == sample {
-			if AD, err := variant.GetGenotypeField(variant.Samples[i], "AD", -1); err == nil {
-				ADslice := AD.([]int)
+			if AD, err := variant.GetGenotypeField(variant.Samples[i], "AD", -1); err != nil {
+				return []int{}, err
+			} else {
+				ADstring := strings.Split(AD.(string), ",")
+				var ADslice = make([]int, len(ADstring))
+				for i := 0; i < len(ADstring); i++ {
+					ADslice[i], _ = strconv.Atoi(ADstring[i])
+				}
 				return ADslice, nil
 			}
 		}
 	}
-	var err = errors.New("New error")
+	var err = errors.New("dont get AD in " + variant.String())
 	return []int{}, err
+}
+
+// GetAF gets allele frequency from INFO filed
+func GetAF(variants []*vcfgo.Variant) []float64 {
+	var AFs []float64
+	for _, variant := range variants {
+		AF, err := variant.Info().Get("AF")
+		if err != nil {
+			log.Fatalln("get AF error: ", err)
+		}
+		if af, ok := AF.(float64); ok {
+			AFs = append(AFs, af)
+		}
+	}
+	return AFs
+}
+
+// DisEqual evaluates whether all elements is equal in an array of number.
+func DisEqual(arr []float64) bool {
+	if len(arr) == 0 || len(arr) == 1 {
+		return true
+	} else {
+		for i := 1; i < len(arr); i++ {
+			if arr[0] != arr[i] {
+				return true
+			}
+		}
+	}
+	return false
 }
