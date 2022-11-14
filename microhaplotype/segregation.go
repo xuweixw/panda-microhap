@@ -5,7 +5,7 @@ import "log"
 // law of segregation
 // Gregor Johann Mendel
 
-type Genotype [2]int // "0/0, 0/1, 1/1, 0/2, 1/2, 2/2..."
+type Genotype [2]byte // "0/0, 0/1, 1/1, 0/2, 1/2, 2/2, ./."
 
 func (g Genotype) Equal(genotype Genotype) bool {
 	return g[0] == genotype[0] && g[1] == genotype[1]
@@ -24,7 +24,7 @@ func Segregate(parents []Genotype, children Genotype) bool {
 	}
 	for i := range expect {
 		// 基因型分离时，可能是大数在前，需要考虑这种情况
-		if expect[i].Equal(children) || expect[i].Equal([2]int{children[1], children[0]}) {
+		if expect[i].Equal(children) || expect[i].Equal([2]byte{children[1], children[0]}) {
 			break
 		} else if i == 3 {
 			return false

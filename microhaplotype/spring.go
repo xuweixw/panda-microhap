@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/brentp/vcfgo"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -155,7 +154,7 @@ func CheckMH(variants []*vcfgo.Variant) bool {
 		//		return false
 		//	}
 		//}
-		// Check genotype polymophsim
+		// Check genotype polymorphism
 		sampleNames := variant.Header.SampleNames
 		firstGT, _ := GetGT(variant, sampleNames[0])
 		for i := 1; i < len(sampleNames); i++ {
@@ -176,18 +175,13 @@ func CheckMH(variants []*vcfgo.Variant) bool {
 func GetGT(variant *vcfgo.Variant, sample string) (Genotype, error) {
 	for i, s := range variant.Header.SampleNames {
 		if s == sample {
-
 			if GT, err := variant.GetGenotypeField(variant.Samples[i], "GT", -1); err == nil {
 				GTString := GT.(string)
-				diploid := strings.Split(GTString, "/")
-				ploidA, _ := strconv.ParseUint(diploid[0], 10, 64)
-				ploidB, _ := strconv.ParseUint(diploid[1], 10, 64)
-				genotype := Genotype{int(ploidA), int(ploidB)}
-				return genotype, nil
+				return Genotype{GTString[0], GTString[2]}, nil
 			}
 		}
 	}
-	var err = errors.New("New error")
+	var err = errors.New("New error:")
 	return Genotype{0, 0}, err
 }
 
